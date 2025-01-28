@@ -16,10 +16,14 @@ jobs:
           cd vaultwarden
           cargo build --features sqlite --release
           cd target/release
-          docker pull vaultwarden/server:${{ inputs.version }}-alpine
-          docker create --name vw vaultwarden/server:${{ inputs.version }}-alpine
-          docker cp vw:/web-vault .
-          docker rm vw
+          mkdir vm-image
+          cd vm-image
+          wget https://raw.githubusercontent.com/jjlin/docker-image-extract/main/docker-image-extract
+          chmod +x docker-image-extract
+          ./docker-image-extract vaultwarden/server:${{ inputs.version }}-alpine
+          cd ..
+          mv vm-image/output/web-vault .
+          rm -rf vm-image
         env:
           OPENSSL_DIR: 'C:\Program Files\OpenSSL'
       - uses: actions/upload-artifact@v4
