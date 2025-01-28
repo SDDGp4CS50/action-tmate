@@ -1,18 +1,32 @@
-name: build
+name: Build Vaultwarden Windows Server
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Vaultwarden Version'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - run: |
-          git clone -b 1.33.0 https://github.com/dani-garcia/vaultwarden.git
+          git clone -b ${{ inputs.tags }} https://github.com/dani-garcia/vaultwarden.git
           cd vaultwarden
           cargo build --features sqlite --release
+          cd target/release
+          docker pull vaultwarden/server:${{ inputs.tags }}-alpine
+          docker create --name vw vaultwarden/server:${{ inputs.tags }}-alpine
+          docker cp vw:/web-vault .
+          docker rm vw
         env:
           OPENSSL_DIR: 'C:\Program Files\OpenSSL'
       - uses: actions/upload-artifact@v4
         with:
           name: Package
-          path: vaultwarden/target/release/vaultwarden.exe
+          path: vaultwarden/target/release
