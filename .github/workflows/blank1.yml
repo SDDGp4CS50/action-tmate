@@ -9,8 +9,9 @@ jobs:
       - run: |
           git clone -b 1.33.0 https://github.com/dani-garcia/vaultwarden.git
           cd vaultwarden
-          export OPENSSL_NO_VENDOR=true
           cargo build --features sqlite --release
+        env:
+          OPENSSL_NO_VENDOR: true
       - uses: actions/upload-artifact@v4
         with:
           name: Package
